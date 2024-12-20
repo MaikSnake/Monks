@@ -1,45 +1,70 @@
 const fs = require('fs');
 
-// Lê um arquivo JSON
+// Função para ler um arquivo JSON
 function lerArquivo(caminho) {
-    let dados = fs.readFileSync(caminho, 'utf8');
-    return JSON.parse(dados);
+    if (fs.existsSync(caminho)) {
+        let dados = fs.readFileSync(caminho, 'utf8');
+        if (dados) {
+            return JSON.parse(dados);
+        } else {
+            console.error(`O arquivo ${caminho} está vazio.`);
+            return [];
+        }
+    } else {
+        console.error(`O arquivo ${caminho} não foi encontrado.`);
+        return [];
+    }
 }
 
-// Corrige os dados
+// Função para corrigir os dados
 function corrigirDados(dados) {
-    // Mapeamento de caracteres corrompidos para seus equivalentes corretos
     const charMap = {
         'æ': 'a', // æ -> a
         'ø': 'o'  // ø -> o
     };
 
-    // Função para corrigir strings
+    // Corrige uma string específica
     function corrigirTexto(texto) {
-        if (typeof texto !== 'string') return texto; // Retorna se não for string
-        let corrigido = texto;
-        for (const [corrompido, correto] of Object.entries(charMap)) {
-            corrigido = corrigido.split(corrompido).join(correto); // Substitui todos
+        if (typeof texto === 'string') {
+            let corrigido = texto;
+            for (const corrompido in charMap) {
+                if (texto.includes(corrompido)) {
+                    corrigido = corrigido.split(corrompido).join(charMap[corrompido]);
+                }
+            }
+            return corrigido;
+        } else {
+            return texto; // Se não for string, retorna como está
         }
-        return corrigido;
     }
 
-    // Aplica as correções em todos os itens
-    return dados.map(item => {
-        // Itera sobre todas as propriedades do objeto
-        for (let chave in item) {
-            if (typeof item[chave] === 'string') {
-                item[chave] = corrigirTexto(item[chave]); // Corrige texto nas propriedades
+    if (Array.isArray(dados)) {
+        return dados.map(item => {
+            if (typeof item === 'object' && item !== null) {
+                for (let chave in item) {
+                    item[chave] = corrigirTexto(item[chave]);
+                }
             }
-        }
-        return item;
-    });
+            return item;
+        });
+    } else {
+        console.error('Os dados fornecidos não são um array.');
+        return [];
+    }
 }
 
-// Salva o arquivo corrigido
+// Função para salvar os dados corrigidos
 function salvarArquivo(caminho, dados) {
-    fs.writeFileSync(caminho, JSON.stringify(dados, null, 2));
-    console.log(`Arquivo corrigido salvo em: ${caminho}`);
+    if (Array.isArray(dados)) {
+        try {
+            fs.writeFileSync(caminho, JSON.stringify(dados, null, 2));
+            console.log(`Arquivo corrigido salvo em: ${caminho}`);
+        } catch (erro) {
+            console.error(`Erro ao salvar o arquivo ${caminho}:`, erro.message);
+        }
+    } else {
+        console.error('Os dados não estão no formato correto para salvar.');
+    }
 }
 
 // Processo principal
@@ -47,14 +72,20 @@ function main() {
     const arquivosEntrada = ['broken_database_1.json', 'broken_database_2.json'];
     const arquivosSaida = ['fixed_database_1.json', 'fixed_database_2.json'];
 
-    for (let i = 0; i < arquivosEntrada.length; i++) {
-        try {
-            let dados = lerArquivo(arquivosEntrada[i]); // Lê os dados
-            let corrigidos = corrigirDados(dados);      // Corrige os dados
-            salvarArquivo(arquivosSaida[i], corrigidos); // Salva o resultado
-        } catch (erro) {
-            console.error(`Erro ao processar o arquivo ${arquivosEntrada[i]}:`, erro.message);
+    if (arquivosEntrada.length === arquivosSaida.length) {
+        for (let i = 0; i < arquivosEntrada.length; i++) {
+            let dados = lerArquivo(arquivosEntrada[i]);
+            if (dados.length > 0) {
+                let corrigidos = corrigirDados(dados);
+                if (corrigidos.length > 0) {
+                    salvarArquivo(arquivosSaida[i], corrigidos);
+                } else {
+                    console.error(`Os dados corrigidos do arquivo ${arquivosEntrada[i]} estão vazios.`);
+                }
+            }
         }
+    } else {
+        console.error('A quantidade de arquivos de entrada não corresponde à de saída.');
     }
 }
 
