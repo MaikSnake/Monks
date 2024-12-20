@@ -28,6 +28,7 @@ O objetivo deste projeto é criar um programa em Node.js que leia arquivos JSON 
 
 1. *Pré-requisitos*
    - Certifique-se de que o *Node.js* está instalado:
+     ```
      node -v
      ```
 
@@ -36,6 +37,7 @@ O objetivo deste projeto é criar um programa em Node.js que leia arquivos JSON 
      - `broken_database_1.json`
      - `broken_database_2.json`
    - Exemplo de conteúdo:
+     ```
      [
          { "nome": "Joæo", "cidade": "Sãø Paulo" },
          { "nome": "Andreæ", "cidade": "Rio de Janeirø" }
@@ -47,6 +49,7 @@ O objetivo deste projeto é criar um programa em Node.js que leia arquivos JSON 
 
 4. *Execução*
    - No terminal, navegue até a pasta onde o arquivo foi salvo e execute:
+     ```
      $ node corrigir.js
      ```
 
@@ -55,10 +58,12 @@ O objetivo deste projeto é criar um programa em Node.js que leia arquivos JSON 
      - `fixed_database_1.json`
      - `fixed_database_2.json`
    - Exemplo do resultado corrigido:
+     ```
      [
          { "nome": "Joao", "cidade": "São Paulo" },
          { "nome": "Andrea", "cidade": "Rio de Janeiro" }
      ]
+     ```
 
 #### *Conceitos Importantes*
 
